@@ -4,6 +4,7 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.tools import BaseTool
 from langchain.prompts import PromptTemplate
+from langchain import hub
 
 from agent.tools import GetSuiInfoTool, GetSuiResourcesTool, ExplainSuiConceptTool
 from config.config import GEMINI_API_KEY, GEMINI_MODEL, AGENT_NAME, AGENT_GREETING
@@ -27,20 +28,8 @@ class SuiAgent:
             ExplainSuiConceptTool()
         ]
         
-        # Create agent prompt
-        self.prompt = PromptTemplate.from_template(
-            """You are MystenMinds, an AI assistant that helps users navigate and understand the Sui blockchain ecosystem.
-            Always introduce yourself as MystenMinds at the beginning of each new conversation.
-            Be helpful, friendly, and knowledgeable about Sui blockchain technology.
-            
-            {chat_history}
-            
-            Human: {input}
-            
-            Use the available tools to provide accurate information about Sui blockchain.
-            
-            {agent_scratchpad}"""
-        )
+        # Get the standard ReAct prompt from LangChain hub
+        self.prompt = hub.pull("hwchase17/react")
         
         # Create agent
         self.agent = create_react_agent(
@@ -54,7 +43,8 @@ class SuiAgent:
             agent=self.agent,
             tools=self.tools,
             verbose=True,
-            handle_parsing_errors=True
+            handle_parsing_errors=True,
+            max_iterations=5  # Prevent infinite loops
         )
         
         # Agent name and greeting
@@ -70,10 +60,16 @@ class SuiAgent:
         try:
             # If this is the first interaction, prepend the greeting
             if is_first_interaction:
-                response = await self.agent_executor.ainvoke({"input": query})
-                return f"{self.greeting}\n\n{response['output']}"
+                response = await self.agent_executor.ainvoke({
+                    "input": f"{self.greeting}\n\nUser question: {query}",
+                    "chat_history": []
+                })
+                return response['output']
             else:
-                response = await self.agent_executor.ainvoke({"input": query})
-                return response["output"]
+                response = await self.agent_executor.ainvoke({
+                    "input": query,
+                    "chat_history": []
+                })
+                return response['output']
         except Exception as e:
-            return f"Error processing your query: {str(e)}"
+            return f"Error processing your query: {str(e)}. Please try again."

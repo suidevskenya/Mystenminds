@@ -3,22 +3,22 @@ from langchain.tools import BaseTool
 from config.config import SUI_KNOWLEDGE_BASE
 
 class GetSuiInfoTool(BaseTool):
-    name = "get_sui_info"
-    description = "Get general information about the Sui blockchain ecosystem"
+    name: str = "get_sui_info"  # Added type annotation
+    description: str = "Get general information about the Sui blockchain ecosystem"  # Added type annotation
     
     def _run(self, query: str = "") -> Dict[str, Any]:
         return SUI_KNOWLEDGE_BASE
 
 class GetSuiResourcesTool(BaseTool):
-    name = "get_sui_resources"
-    description = "Get links to Sui documentation, explorer, GitHub, and wallet"
+    name: str = "get_sui_resources"  # Added type annotation
+    description: str = "Get links to Sui documentation, explorer, GitHub, and wallet"  # Added type annotation
     
     def _run(self, query: str = "") -> Dict[str, str]:
         return SUI_KNOWLEDGE_BASE["resources"]
 
 class ExplainSuiConceptTool(BaseTool):
-    name = "explain_sui_concept"
-    description = "Explain a concept related to Sui blockchain (transactions, objects, Move language, etc.)"
+    name: str = "explain_sui_concept"  # Added type annotation
+    description: str = "Explain a concept related to Sui blockchain (transactions, objects, Move language, etc.)"  # Added type annotation
     
     def _run(self, concept: str) -> str:
         concepts = {
