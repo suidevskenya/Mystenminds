@@ -1,16 +1,17 @@
-# agent/sui_connector.py
 from typing import Dict, List, Any, Optional
 import asyncio
 import json
-from pysui.sui.client import SuiClient
-from pysui.sui.sui_builders.get_builders import GetObjectsBuilder, GetTransactionBuilder
-from pysui.sui.sui_builders.subscription_builders import SubscribeEventBuilder
-from pysui.sui.sui_builders.transaction_builders import (
-    ProgrammableTransactionBuilder, TransactionBuilder
+from pysui.sui.sui_clients.sync_client import SuiClient as SyncSuiClient
+from pysui.sui.sui_clients.async_client import SuiClient as AsyncSuiClient
+from pysui.sui.sui_builders.get_builders import GetObjectsOwnedByAddress, GetTx
+from pysui.sui.sui_builders.subscription_builders import SubscribeEvent
+from pysui.sui.sui_builders.exec_builders import (
+    _MoveCallTransactionBuilder as ProgrammableTransactionBuilder,
+    _MoveCallTransactionBuilder as TransactionBuilder,
 )
 from pysui.sui.sui_types.address import SuiAddress
 from pysui.sui.sui_types.scalars import SuiString, SuiU64
-from pysui.sui.sui_clients.sync_client import SuiSyncClient
+from pysui.sui.sui_clients.sync_client import SuiClient
 from pysui.sui.sui_config import SuiConfig
 from config.config import SUI_RPC_ENDPOINT, SUI_WEBSOCKET_ENDPOINT
 
@@ -22,9 +23,9 @@ class SuiConnector:
         # Create Sui config with the RPC endpoint
         self.config = SuiConfig.user_config(rpc_url=SUI_RPC_ENDPOINT)
         # Initialize sync client for regular RPC calls
-        self.client = SuiSyncClient(self.config)
+        self.client = SyncSuiClient(self.config)
         # Initialize async client for subscriptions
-        self.async_client = SuiClient(self.config)
+        self.async_client = AsyncSuiClient(self.config)
         
     def get_object(self, object_id: str) -> Dict[str, Any]:
         """Get details of a Sui object by ID"""
