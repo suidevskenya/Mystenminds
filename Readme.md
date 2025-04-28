@@ -1,52 +1,57 @@
-# MystenMinds: Sui Ecosystem AI Agent
+# MystenMinds Integration Guide
 
-This project implements an AI agent named MystenMinds that helps users navigate and understand the Sui blockchain ecosystem. The agent uses LangChain and the Gemini API to provide informative responses about Sui concepts, resources, and features.
+This project consists of two main parts:
 
-## Features
+1. **Frontend:** The Next.js app located in the `mysten-minds/` folder.
+2. **Backend & Agent:** The FastAPI backend and AI agent located in the root folder and `agent/` folder.
 
-- Get general information about Sui blockchain
-- Access important Sui resources (documentation, explorer, wallet)
-- Learn about key Sui concepts like objects, Move programming language, transactions, etc.
-- Interact with the agent via API or command line
+## Overview
 
-## Setup
+- The frontend (`mysten-minds`) communicates with the backend API server.
+- The backend (`main.py`) runs a FastAPI server that exposes endpoints to interact with the AI agent (`agent/sui_agent.py`).
+- The AI agent processes queries about the SUI blockchain ecosystem using LangChain and Google Gemini.
 
-1. Clone the repository
-2. Install the requirements:
-   ```
-   pip install -r requirements.txt
-   ```
-3. Create a `.env` file in the root directory with your Gemini API key:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
+## Running the Project
 
-## Usage
+### 1. Start the Backend API Server
 
-### API Server
+Make sure you have Python dependencies installed (e.g., FastAPI, uvicorn, LangChain, etc.).
 
-Run the FastAPI server:
+Run the backend server with:
 
-```
-uvicorn main:app --reload
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-The API will be available at `http://localhost:8000`
+This will start the FastAPI server on `http://localhost:8000`.
 
-### Command Line Interface
+### 2. Start the Frontend Next.js App
 
-Run the command line interface:
+Navigate to the `mysten-minds` folder:
 
+```bash
+cd mysten-minds
+npm install
+npm run dev
 ```
-python main.py
-```
 
-## Expanding the Agent
+This will start the Next.js development server on `http://localhost:3000`.
 
-To add more advanced features:
+### 3. Using the Application
 
-1. Create new tools in `agent/tools.py`
-2. Add real-time Sui blockchain data integration
-3. Connect to Sui RPC endpoints for live data
-4. Implement transaction creation and submission capabilities
-5. Add wallet integration features
+- Open your browser at `http://localhost:3000`.
+- Use the interface to ask questions about the SUI ecosystem.
+- The frontend will send queries to the backend API at `http://localhost:8000/query`.
+- The backend will process the queries using the AI agent and return responses.
+
+## Optional Improvements
+
+- You can add environment variables in the frontend to configure the backend API URL.
+- You can create a script or use tools like `concurrently` to run both frontend and backend with a single command.
+- Enhance error handling and session management as needed.
+
+## Summary
+
+This setup provides a seamless integration between the Next.js frontend and the Python AI agent backend via FastAPI.
+
+For any questions or issues, please refer to the code or contact the maintainers.
