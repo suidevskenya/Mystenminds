@@ -1,4 +1,16 @@
 'use client'
+
+// Polyfill for crypto.randomUUID if not available
+if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
+  (crypto as { randomUUID?: () => string }).randomUUID = function () {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0,
+        v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  };
+}
+
 import Head from "next/head";
 import { useEffect, useState } from "react";
 
@@ -7,19 +19,26 @@ import "@mysten/dapp-kit/dist/index.css";
 
 export default function Home() {
 
-       const [query, setQuery] = useState('');
-        const [isLoading, setIsLoading] = useState(false);
-        const [response, setResponse] = useState('');
-        
+  const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState('');
 
-        const wallet = useWallets();
-        const connectedWallet = wallet[0];
-        const address = connectedWallet?.accounts[0]?.address;
+  const wallet = useWallets();
+  const connectedWallet = wallet[0];
+  const address = connectedWallet?.accounts[0]?.address;
 
-        const shortenAddress = (address: string) => {
-          if (!address || address.length <= 10) return address || '';
-          return `${address.slice(0, 5)}...${address.slice(-4)}`;
-        };
+  const shortenAddress = (address: string) => {
+    if (!address || address.length <= 10) return address || '';
+    return `${address.slice(0, 5)}...${address.slice(-4)}`;
+  };
+
+  // Fix for connectedWallet possibly undefined
+  useEffect(() => {
+    if (!connectedWallet) {
+      console.warn('No connected wallet detected');
+    }
+  }, [connectedWallet]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -29,12 +48,12 @@ export default function Home() {
     setResponse('');
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/query`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: query, is_first_interaction: false }),
+        body: JSON.stringify({ message: query, is_first_interaction: false }),
       });
 
       if (!res.ok) {
@@ -43,7 +62,7 @@ export default function Home() {
 
       const data = await res.json();
       setResponse(data.answer);
-    } catch (error) {
+    } catch {
       setResponse('An error occurred while fetching the response.');
     } finally {
       setIsLoading(false);
@@ -55,14 +74,14 @@ export default function Home() {
       console.log('Connected wallet:', address);
     }
   }, [connectedWallet,address]);
-  
+
   const exampleQueries = [
     "How do I create a Move smart contract on SUI?",
     "What are SUI's transaction fees compared to Solana?",
     "Explain SUI's object-centric model",
     "How does SUI achieve horizontal scalability?"
   ];
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 text-white">
       <Head>
@@ -94,7 +113,7 @@ export default function Home() {
               <div className="bg-green-500 rounded-full w-3 h-3"></div>
             </div>
           </div>
-        ) }
+        )}
 
         {/* Hero Section */}
         <section className="text-center py-16">
@@ -118,7 +137,7 @@ export default function Home() {
         {/* Query Interface */}
         <section id="query" className="max-w-3xl mx-auto bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-16">
           <h2 className="text-2xl font-semibold mb-4 text-center">Ask Me Anything About SUI</h2>
-          
+
           <form onSubmit={handleSubmit} className="mb-6">
             <div className="flex gap-2">
               <input
@@ -128,7 +147,7 @@ export default function Home() {
                 placeholder="E.g., How does SUI's consensus mechanism work?"
                 className="flex-1 px-4 py-3 rounded-lg bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <button 
+              <button
                 type="submit"
                 disabled={isLoading}
                 className="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-lg font-medium transition disabled:opacity-50"
@@ -137,14 +156,14 @@ export default function Home() {
               </button>
             </div>
           </form>
-          
+
           {response && (
             <div className="bg-white/20 p-4 rounded-lg animate-fade-in">
               <h3 className="font-medium mb-2">Response:</h3>
               <p>{response}</p>
             </div>
           )}
-          
+
           <div className="mt-6">
             <h3 className="font-medium mb-2">Try asking:</h3>
             <div className="flex flex-wrap gap-2">
@@ -161,7 +180,6 @@ export default function Home() {
           </div>
         </section>
 
-      
       </main>
 
       <footer className="border-t border-white/20 py-8">
@@ -185,5 +203,5 @@ export default function Home() {
       </footer>
     </div>
   );
-  
+
 }

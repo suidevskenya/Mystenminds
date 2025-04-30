@@ -158,8 +158,8 @@
           body: JSON.stringify({ message })
         });
         const data = await response.json();
-        if (data.response) {
-          appendMessage(data.response, 'agent-message');
+        if (data.answer) {
+          appendMessage(data.answer, 'agent-message');
         } else if (data.error) {
           appendMessage('Error: ' + data.error, 'agent-message');
         }

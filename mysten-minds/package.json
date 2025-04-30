@@ -1,10 +1,10 @@
-{
-  "name": "mysten-minds",
+{"name": "mysten-minds",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "export": "next export",
     "start": "next start",
     "lint": "next lint"
   },
@@ -19,6 +19,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/next": "^8.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

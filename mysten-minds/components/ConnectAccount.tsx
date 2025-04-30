@@ -1,16 +1,5 @@
-import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 import { useSuiClientQuery } from '@mysten/dapp-kit';
-function App() {
-	return (
-		<div className="App">
-			<header className="App-header">
-				<ConnectButton />
-			</header>
-
-			<ConnectedAccount />
-		</div>
-	);
-}
 
 function ConnectedAccount() {
 	const account = useCurrentAccount();
@@ -20,7 +9,7 @@ function ConnectedAccount() {
 	}
     return (
 		<div>
-			<div>Connected to {account.address}</div>;
+			<div>Connected to {account.address}</div>
 			<OwnedObjects address={account.address} />
 		</div>
 	);
@@ -46,4 +35,5 @@ function OwnedObjects({ address }: { address: string }) {
 		</ul>
 	);
 }
+
 export default ConnectedAccount;
