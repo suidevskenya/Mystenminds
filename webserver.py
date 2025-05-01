@@ -40,8 +40,10 @@ async def favicon():
 async def root():
     return FileResponse("mysten-minds/out/index.html")
 
-@app.post("/chat")
+@app.api_route("/chat", methods=["POST", "OPTIONS"])
 async def chat(request: Request):
+    if request.method == "OPTIONS":
+        return JSONResponse(status_code=200, content={})
     data = await request.json()
     user_message = data.get("message", "")
     if not user_message:
