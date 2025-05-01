@@ -18,6 +18,7 @@ import { useWallets,ConnectButton } from "@mysten/dapp-kit";
 import "@mysten/dapp-kit/dist/index.css";
 
 export default function Home() {
+  console.log("NEXT_PUBLIC_BACKEND_URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
 
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +49,8 @@ export default function Home() {
     setResponse('');
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`, {
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const res = await fetch(`${baseUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

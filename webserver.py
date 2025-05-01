@@ -14,7 +14,7 @@ agent = SuiAgent()
 # Add CORS middleware to allow requests from frontend origin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://0.0.0.0:8000", "http://localhost:8000"],
+    allow_origins=["http://0.0.0.0:8000", "http://localhost:8000", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,6 +24,16 @@ from fastapi.responses import FileResponse
 
 # Serve Next.js static files for /_next only (no /static directory)
 app.mount("/_next", StaticFiles(directory="mysten-minds/out/_next"), name="next_static")
+
+from fastapi.responses import FileResponse
+
+# Serve Next.js static files for /_next only (no /static directory)
+app.mount("/_next", StaticFiles(directory="mysten-minds/out/_next"), name="next_static")
+
+# Serve favicon.ico directly without redirect
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse("mysten-minds/public/favicon.ico")
 
 # Serve index.html at root
 @app.get("/", response_class=HTMLResponse)
