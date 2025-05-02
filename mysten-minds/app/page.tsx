@@ -12,7 +12,7 @@ if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
 }
 
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import { useWallets,ConnectButton } from "@mysten/dapp-kit";
 import "@mysten/dapp-kit/dist/index.css";
@@ -24,6 +24,9 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState('');
 
+  const [queryHistory, setQueryHistory] = useState<string[]>([]); // State to store query history
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false); // State to toggle history visibility
+
   const wallet = useWallets();
   const connectedWallet = wallet[0];
   const address = connectedWallet?.accounts[0]?.address;
@@ -32,6 +35,28 @@ export default function Home() {
     if (!address || address.length <= 10) return address || '';
     return `${address.slice(0, 5)}...${address.slice(-4)}`;
   };
+
+  // Adding a dropdwon menu
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);
+  };
+
+  // Handle click outside to close dropdown
+  const handleClickOutside = (event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setIsDropdownOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Fix for connectedWallet possibly undefined
   useEffect(() => {
@@ -45,6 +70,7 @@ export default function Home() {
 
     if (!query.trim()) return;
 
+    setQueryHistory((prev) => [...prev, query]); // Add query to history
     setIsLoading(true);
     setResponse('');
 
@@ -96,14 +122,65 @@ export default function Home() {
         {/* Header */}
         <header className="flex justify-between items-center mb-12">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-              <span className="text-2xl font-bold">M</span>
+            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-3 cursor-pointer" 
+              onClick={toggleDropdown}
+            >
+              <span className="text-white text-2xl font-bold">M</span>
             </div>
+            {isDropdownOpen && (
+             <div className="absolute top-14 left-0 bg-blue-500 text-white rounded-lg shadow-lg w-48">
+              <ul className="py-2">
+                <li className="px-4 py-2 hover:bg-blue-200 cursor-pointer">Events</li>
+                <li className="px-4 py-2 hover:bg-blue-200 cursor-pointer">Communities</li>
+                <li className="px-4 py-2 hover:bg-blue-200 cursor-pointer">Resources</li>
+              </ul>
+             </div>
+            )}
             <h1 className="text-2xl font-bold">MystenMinds</h1>
           </div>
 
+            {/* History Button */}
+            <button 
+              onClick={() => setIsHistoryVisible((prev) => !prev)}
+              className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-5 h-5 mr-2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.862 3.487a2.25 2.25 0 113.182 3.182L7.5 19.313l-4.5 1.5 1.5-4.5L16.862 3.487z"
+                />
+              </svg>
+            </button>
           <ConnectButton className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition"/>
+      
         </header>
+
+        {/* History Dropdown */}
+        {isHistoryVisible && (
+          <div className="absolute top-20 right-4 bg-white text-black rounded-lg shadow-lg w-64 p-4">
+            <h3 className="font-semibold mb-2">Query History</h3>
+            {queryHistory.length > 0 ? (
+              <ul className="space-y-2">
+                {queryHistory.map((q, index) => (
+                  <li key={index} className="text-sm bg-gray-100 p-2 rounded-lg">
+                    {query}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500">No queries yet.</p>
+            )}
+          </div>
+        )}
+
 
         {connectedWallet && address && (
           <div className="mb-8 bg-white/10 p-4 rounded-lg max-w-3xl mx-auto">
