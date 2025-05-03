@@ -17,7 +17,10 @@ import os
 from config.config import AGENT_NAME, AGENT_GREETING
 from agent.tools import GetSuiInfoTool, GetSuiResourcesTool, ExplainSuiConceptTool
 from agent.blockchain_tools import GetObjectTool, GetTransactionsTool, GetAccountBalanceTool, GetNetworkStatsTool, CreateTransferTool
-from agent.community_tools import TelegramGroupsTool
+from agent.community_tools import TelegramGroupsTool, TwitterSuiTrendsTool
+from agent.tweepy_twitter_tool import TweepyTwitterTool
+from agent.market_data_tool import GetMarketDataTool
+from agent.market_data_agent import MarketDataAgent
 
 class SuiAgent:
     def __init__(self):
@@ -87,6 +90,7 @@ class SuiAgent:
 
     def _initialize_tools(self) -> List[BaseTool]:
         """Initialize tools without verbose logging"""
+        market_data_agent = MarketDataAgent()
         return [
             GetSuiInfoTool(),
             GetSuiResourcesTool(),
@@ -96,7 +100,10 @@ class SuiAgent:
             GetAccountBalanceTool(),
             GetNetworkStatsTool(),
             CreateTransferTool(),
-            TelegramGroupsTool()
+            TelegramGroupsTool(),
+            TwitterSuiTrendsTool(),
+            TweepyTwitterTool(),
+            GetMarketDataTool(market_data_agent)
         ]
 
     async def process_query(self, query: str, is_first_interaction: bool = False) -> str:

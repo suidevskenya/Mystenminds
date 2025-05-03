@@ -31,7 +31,7 @@ class SuiConnector:
         """Get details of a Sui object by ID"""
         try:
             result = self.client.execute(
-                GetObjectsBuilder().object_ids([object_id]).build()
+                GetObjectsOwnedByAddress().object_ids([object_id]).build()
             )
             if result.is_ok():
                 return result.result_data[0].data
@@ -45,11 +45,36 @@ class SuiConnector:
             # Sui doesn't have a direct "get latest transactions" endpoint, so we'll need to 
             # use the available pagination methods from the SDK
             result = self.client.execute(
-                GetTransactionBuilder().limit(limit).descending_order().build()
+                GetTx().limit(limit).descending_order().build()
             )
             if result.is_ok():
                 return result.result_data
             return [{"error": "Failed to retrieve transactions"}]
+        except Exception as e:
+            return [{"error": str(e)}]
+
+    def get_transactions_by_address(self, address: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get recent transactions related to a specific wallet address"""
+        try:
+            # This is a placeholder implementation; adjust based on actual SDK capabilities
+            # For example, use GetObjectsOwnedByAddress to get objects, then get transactions involving those objects
+            owned_objects_result = self.client.execute(
+                GetObjectsOwnedByAddress().address(address).build()
+            )
+            if not owned_objects_result.is_ok():
+                return [{"error": "Failed to retrieve owned objects"}]
+
+            object_ids = [obj.object_id for obj in owned_objects_result.result_data]
+            transactions = []
+            for obj_id in object_ids:
+                tx_result = self.client.execute(
+                    GetTx().object_id(obj_id).limit(limit).descending_order().build()
+                )
+                if tx_result.is_ok():
+                    transactions.extend(tx_result.result_data)
+                if len(transactions) >= limit:
+                    break
+            return transactions[:limit]
         except Exception as e:
             return [{"error": str(e)}]
     
@@ -75,12 +100,34 @@ class SuiConnector:
             }
         except Exception as e:
             return {"error": str(e)}
+
+    def get_balances(self, address: str) -> Dict[str, Any]:
+        """Get balances for all coin types owned by an address"""
+        try:
+            balances = self.client.config.client.sui_client.get_coin_balances_owned_by_address(address=address)
+            total_balances = {}
+            for entry in balances:
+                coin_type = entry.get("coin_type", "unknown")
+                balance = int(entry.get("balance", 0))
+                total_balances[coin_type] = total_balances.get(coin_type, 0) + balance
+
+            # Convert balances to human-readable format (assuming 9 decimals)
+            human_readable = {k: v / 10**9 for k, v in total_balances.items()}
+
+            return {
+                "address": address,
+                "balances": total_balances,
+                "balances_human": human_readable,
+                "coin_objects": balances
+            }
+        except Exception as e:
+            return {"error": str(e)}
     
     async def subscribe_to_events(self, event_filter: Dict[str, Any], callback):
         """Subscribe to Sui events using WebSocket"""
         try:
             # Create subscription builder
-            subscription = SubscribeEventBuilder().filter(event_filter).build()
+            subscription = SubscribeEvent().filter(event_filter).build()
             
             # Subscribe to events
             subscription_id = await self.async_client.subscribe_event(
@@ -161,3 +208,24 @@ class SuiConnector:
             }
         except Exception as e:
             return {"error": str(e)}
+
+    def get_transactions_from_explorer(self, address: str, limit: int = 10) -> dict:
+        """Fetch transaction history for a wallet address from an external block explorer API (e.g., Movescan)"""
+        import requests
+
+        try:
+            # Example API endpoint for Movescan (replace with actual if different)
+            api_url = f"https://api.movescan.io/v1/addresses/{address}/transactions?limit={limit}"
+
+            response = requests.get(api_url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            # Parse and return relevant transaction data
+            transactions = data.get("data", [])
+            return {
+                "address": address,
+                "transactions": transactions[:limit]
+            }
+        except requests.RequestException as e:
+            return {"error": f"Failed to fetch transactions from explorer: {str(e)}"}
