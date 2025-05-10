@@ -11,10 +11,20 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 agent = SuiAgent()
 
-# Add CORS middleware to allow requests from frontend origin
+frontend_origin = "https://fantastic-lamp-v6w77q4x7p9vhppvj-8000.app.github.dev"
+
+# Remove explicit OPTIONS handler and custom middleware
+
+# Add simple logging middleware to log incoming requests and methods for debugging
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    return response
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://0.0.0.0:8000", "http://localhost:8000", "http://localhost:3000"],
+    allow_origins=["*"],  # Allow all origins as requested
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,10 +50,20 @@ async def favicon():
 async def root():
     return FileResponse("mysten-minds/out/index.html")
 
-@app.api_route("/chat", methods=["POST", "OPTIONS"])
+from fastapi import Response
+
+@app.options("/chat")
+async def chat_options():
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    }
+    print("OPTIONS /chat request received")
+    return Response(status_code=200, headers=headers)
+
+@app.post("/chat")
 async def chat(request: Request):
-    if request.method == "OPTIONS":
-        return JSONResponse(status_code=200, content={})
     data = await request.json()
     user_message = data.get("message", "")
     if not user_message:
