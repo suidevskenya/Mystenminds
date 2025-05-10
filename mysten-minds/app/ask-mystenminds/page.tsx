@@ -7,6 +7,17 @@ export default function AskMystenMinds() {
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState('');
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEventsDropdownOpen, setIsEventsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);
+  };
+
+  const toggleEventsDropdown = () => {
+    setIsEventsDropdownOpen((prev) => !prev);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -46,19 +57,49 @@ export default function AskMystenMinds() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 text-white flex flex-col p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 text-white flex flex-col p-6 sm:p-8 md:p-10 lg:p-12">
       {/* Header with icons */}
-      <header className="flex flex-col sm:flex-row justify-between items-center mb-8 max-w-full sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full mx-auto">
+      <header className="relative flex flex-col sm:flex-row justify-between items-center mb-8 max-w-full sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full mx-auto">
         {/* Dropdown icon on left far side */}
         <button
           aria-label="Toggle dropdown"
-          className="text-white hover:text-blue-300 focus:outline-none mb-4 sm:mb-0"
+          onClick={toggleDropdown}
+          className="text-white hover:text-blue-300 focus:outline-none mb-4 sm:mb-0 relative z-20"
         >
           {/* Simple hamburger menu icon */}
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+
+        {/* Dropdown menu */}
+        {isDropdownOpen && (
+          <div className="absolute top-12 left-0 bg-gradient-to-b from-indigo-900 to-blue-900 text-white rounded-lg shadow-lg w-48 z-10">
+            <ul className="py-2">
+              <li
+                className="px-4 py-2 hover:bg-blue-600 cursor-pointer relative"
+                onClick={toggleEventsDropdown}
+              >
+                Events
+                {/* Nested dropdown arrow */}
+                <span className="ml-2 inline-block transform transition-transform duration-200" style={{ transform: isEventsDropdownOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                  ▶
+                </span>
+                {/* Nested dropdown */}
+                {isEventsDropdownOpen && (
+                  <ul className="absolute top-0 left-full mt-0 ml-1 bg-blue-600 rounded-lg shadow-lg w-40 z-20">
+                    <li className="px-4 py-2 hover:bg-blue-700 cursor-pointer">Hackathons</li>
+                    <li className="px-4 py-2 hover:bg-blue-700 cursor-pointer">Bootcamps</li>
+                    <li className="px-4 py-2 hover:bg-blue-700 cursor-pointer">Gaming</li>
+                  </ul>
+                )}
+              </li>
+              <li className="px-4 py-2 hover:bg-blue-600 cursor-pointer">Projects</li>
+              <li className="px-4 py-2 hover:bg-blue-600 cursor-pointer">Communities</li>
+              <li className="px-4 py-2 hover:bg-blue-600 cursor-pointer">Spaces</li>
+            </ul>
+          </div>
+        )}
  
         {/* Right side icons */}
         <div className="flex items-center space-x-6">
@@ -92,8 +133,8 @@ export default function AskMystenMinds() {
 
       <form onSubmit={handleSubmit} className="mb-6 w-full max-w-3xl mx-auto">
         <div className="flex gap-2">
-          <input
-            type="text"
+          <textarea
+            rows={4}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="E.g., How does SUI's consensus mechanism work?"
@@ -102,7 +143,7 @@ export default function AskMystenMinds() {
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-lg font-medium transition disabled:opacity-50"
+            className="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-lg font-medium transition disabled:opacity-50 h-10 w-15 justify-center flex items-center m-auto"
           >
             {isLoading ? 'Thinking...' : 'Ask'}
           </button>
