@@ -64,6 +64,15 @@ class SuiAgent:
             
             Final Answer: your_response
             
+            Please respond in the following JSON format:
+            {{
+                "thought": "your thought process here",
+                "action": "tool_name or None",
+                "action_input": "input to the tool or None",
+                "observation": "result from the tool or None",
+                "final_answer": "your final answer here"
+            }}
+            
             Current input: {input}
             {agent_scratchpad}"""
         )
@@ -91,6 +100,26 @@ class SuiAgent:
     def _initialize_tools(self) -> List[BaseTool]:
         """Initialize tools without verbose logging"""
         market_data_agent = MarketDataAgent()
+        # Initialize google_search_tool differently due to missing Tool and GoogleSearch classes
+        # Using a placeholder or custom tool implementation for Google Search
+        from langchain.tools import BaseTool
+
+        class GoogleSearchTool(BaseTool):
+            name: str = "google_search"
+            description: str = "Use this tool to perform Google searches."
+
+            def _run(self, query: str) -> str:
+                # Use genai client to perform Google Search
+                google_search = genai.Tool(google_search=genai.GoogleSearch())
+                response = google_search.run(query)
+                return response
+
+            async def _arun(self, query: str) -> str:
+                # Async version if needed
+                return self._run(query)
+
+        google_search_tool = GoogleSearchTool()
+
         return [
             GetSuiInfoTool(),
             GetSuiResourcesTool(),
@@ -103,28 +132,59 @@ class SuiAgent:
             TelegramGroupsTool(),
             TwitterSuiTrendsTool(),
             TweepyTwitterTool(),
-            GetMarketDataTool(market_data_agent)
+            GetMarketDataTool(market_data_agent),
+            google_search_tool
         ]
 
     async def process_query(self, query: str, is_first_interaction: bool = False) -> str:
-        """Process queries with clean error handling and fallback"""
+        """Process queries with clean error handling and fallback, returning JSON string output"""
+        import json
         try:
             # Directly handle Telegram groups queries to avoid LLM quota issues
             if "telegram" in query.lower() and "group" in query.lower():
                 telegram_tool = next((tool for tool in self.tools if tool.name == "telegram_groups"), None)
                 if telegram_tool:
-                    return telegram_tool._run(query)
+                    # Return structured output for telegram groups tool as JSON string
+                    result = {
+                        "thought": None,
+                        "action": "telegram_groups",
+                        "action_input": query,
+                        "observation": telegram_tool._run(query),
+                        "final_answer": telegram_tool._run(query)
+                    }
+                    return json.dumps(result)
             
             response = await self.agent_executor.ainvoke({
                 "input": query,
                 "agent_scratchpad": ""
             })
-            return response.get("output", "I couldn't generate a response. Please try again.")
+            output_text = response.get("output", "")
+            try:
+                # Validate JSON output, but return as string
+                json.loads(output_text)
+                return output_text
+            except json.JSONDecodeError:
+                # If output is not valid JSON, wrap raw text in JSON string
+                fallback_result = {
+                    "thought": None,
+                    "action": None,
+                    "action_input": None,
+                    "observation": None,
+                    "final_answer": output_text
+                }
+                return json.dumps(fallback_result)
         
         except Exception as e:
             logger.warning(f"Primary agent error: {str(e)}. Attempting fallback.")
-            # Fallback response or alternative handling
-            return "Sorry, I couldn't process that request due to API limits. Please try again later or ask something else."
+            # Fallback response or alternative handling as JSON string
+            fallback_error = {
+                "thought": None,
+                "action": None,
+                "action_input": None,
+                "observation": None,
+                "final_answer": "Sorry, I couldn't process that request due to API limits. Please try again later or ask something else."
+            }
+            return json.dumps(fallback_error)
 
     def get_greeting(self) -> str:
         """Return greeting without extra logging"""
