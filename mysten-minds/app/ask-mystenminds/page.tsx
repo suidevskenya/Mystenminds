@@ -46,10 +46,51 @@ export default function AskMystenMinds() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 text-white flex flex-col items-center justify-center p-8">
-      <h2 className="text-3xl font-semibold mb-6 text-center">Ask MystenMinds</h2>
+    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-900 text-white flex flex-col p-4 sm:p-6 md:p-8">
+      {/* Header with icons */}
+      <header className="flex flex-col sm:flex-row justify-between items-center mb-8 max-w-full sm:max-w-xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full mx-auto">
+        {/* Dropdown icon on left far side */}
+        <button
+          aria-label="Toggle dropdown"
+          className="text-white hover:text-blue-300 focus:outline-none mb-4 sm:mb-0"
+        >
+          {/* Simple hamburger menu icon */}
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+ 
+        {/* Right side icons */}
+        <div className="flex items-center space-x-6">
+          {/* User info icon */}
+          <button
+            aria-label="User info"
+            className="text-white hover:text-blue-300 focus:outline-none"
+          >
+            {/* User icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A9 9 0 1118.88 6.196 9 9 0 015.12 17.804z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </button>
+ 
+          {/* User's query history icon */}
+          <button
+            aria-label="Query history"
+            className="text-white hover:text-blue-300 focus:outline-none"
+          >
+            {/* History icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4a8 8 0 100 16 8 8 0 000-16z" />
+            </svg>
+          </button>
+        </div>
+      </header>
 
-      <form onSubmit={handleSubmit} className="mb-6 w-full max-w-3xl">
+      <h2 className="text-3xl font-semibold mb-6 text-center max-w-3xl w-full mx-auto">Ask MystenMinds</h2>
+
+      <form onSubmit={handleSubmit} className="mb-6 w-full max-w-3xl mx-auto">
         <div className="flex gap-2">
           <input
             type="text"
@@ -69,13 +110,13 @@ export default function AskMystenMinds() {
       </form>
 
       {response && (
-        <div className="bg-white/20 p-4 rounded-lg animate-fade-in max-w-3xl w-full">
+        <div className="bg-white/20 p-4 rounded-lg animate-fade-in max-w-3xl w-full mx-auto">
           <h3 className="font-medium mb-2">Response:</h3>
           <p className="text-black">{response}</p>
         </div>
       )}
 
-      <div className="mt-6 max-w-3xl w-full">
+      <div className="mt-6 max-w-3xl w-full mx-auto">
         <h3 className="font-medium mb-2">Try asking:</h3>
         <div className="flex flex-wrap gap-2">
           {exampleQueries.map((q, i) => (
