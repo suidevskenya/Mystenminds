@@ -13,6 +13,7 @@ if (typeof crypto !== 'undefined' && !crypto.randomUUID) {
 
 import Head from "next/head";
 import React, { useEffect, useState, useRef } from "react";
+import Link from 'next/link';
 
 import { useWallets,ConnectButton } from "@mysten/dapp-kit";
 import "@mysten/dapp-kit/dist/index.css";
@@ -202,9 +203,9 @@ export default function Home() {
             and the entire Mysten Labs ecosystem.
           </p>
           <div className="flex justify-center">
-            <a href="#query" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition">
+            <Link href="/ask-mystenminds" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition">
               Ask MystenMinds
-            </a>
+            </Link>
 
             {!connectedWallet && (
               <ConnectButton className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium transition">Connect SUI Wallet</ConnectButton>
