@@ -11,9 +11,15 @@ import { useWallet } from "@/hooks/use-wallet"
 import { MobileNav } from "@/components/mobile-nav"
 import { useSwipeable } from "react-swipeable"
 import "../i18n"
+import { useWallets,ConnectButton } from "@mysten/dapp-kit";
+import "@mysten/dapp-kit/dist/index.css";
 
 export default function Home() {
   const [question, setQuestion] = useState("")
+  const [queryHistory, setQueryHistory] = useState<string[]>([]); // State to store query history
+  const [response, setResponse] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [query, setQuery] = useState('');
   const [showSearchBox, setShowSearchBox] = useState(false)
   const [robotState, setRobotState] = useState("idle") // idle, thinking, speaking, scanning
   const [typingText, setTypingText] = useState("")
@@ -24,6 +30,60 @@ export default function Home() {
   const typingRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
 
+  const wallet = useWallets();
+  const connectedWallet = wallet[0];
+  const address = connectedWallet?.accounts[0]?.address;
+
+  const shortenAddress = (address: string) => {
+    if (!address || address.length <= 10) return address || '';
+    return `${address.slice(0, 5)}...${address.slice(-4)}`;
+  };
+
+   // Fix for connectedWallet possibly undefined
+  useEffect(() => {
+    if (!connectedWallet) {
+      console.warn('No connected wallet detected');
+    }
+  }, [connectedWallet]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!query.trim()) return;
+
+    setQueryHistory((prev) => [...prev, query]); // Add query to history
+    setIsLoading(true);
+    setResponse('');
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+      const res = await fetch(`${baseUrl}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: query, is_first_interaction: false }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch response');
+      }
+
+      const data = await res.json();
+      setResponse(data.answer);
+    } catch {
+      setResponse('An error occurred while fetching the response.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (connectedWallet) {
+      console.log('Connected wallet:', address);
+    }
+  }, [connectedWallet,address]);
+  
   const {
     connect,
     disconnect,
@@ -182,25 +242,17 @@ export default function Home() {
           </div>
 
           <div className="hidden sm:block">
-            {isConnected ? (
-              <div className="wallet-connected">
-                <Button className="wallet-button" onClick={() => setShowWalletDialog(true)}>
-                  <div className="wallet-info">
-                    <div className="wallet-balance">{balance} SUI</div>
-                    <div className="wallet-address">{truncateAddress(walletAddress)}</div>
-                  </div>
-                  <div className="wallet-icon">
-                    <div className="wallet-icon-inner"></div>
-                  </div>
-                </Button>
+            {connectedWallet && address && (
+            <div className="mb-8 bg-white/10 p-4 rounded-lg max-w-3xl mx-auto">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm opacity-70">Connected Wallet</span>
+                  <p className="font-mono">{shortenAddress(address)}</p>
+                </div>
+                <div className="bg-green-500 rounded-full w-3 h-3"></div>
               </div>
-            ) : (
-              <Button className="connect-wallet-button" onClick={() => setShowWalletDialog(true)}>
-                <Wallet className="mr-2 h-4 w-4" />
-                {t("connect_button")}
-                <span className="connect-wallet-pulse"></span>
-              </Button>
-            )}
+            </div>
+          )}
           </div>
         </div>
       </header>
