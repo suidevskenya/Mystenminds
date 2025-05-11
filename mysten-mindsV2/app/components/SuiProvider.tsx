@@ -24,3 +24,4 @@ export function SuiProviderWrapper({ children }: { children: React.ReactNode }) 
     </QueryClientProvider>
   );
 }
+
