@@ -36,7 +36,7 @@ export default function ChatPage() {
 
   // Get the chat session
   const chatId = Array.isArray(id) ? id[0] : id
-  const chatSession = getChatById(chatId)
+  const chatSession = getChatById(chatId ?? "")
 
   // Redirect to connect page if not authenticated
   useEffect(() => {

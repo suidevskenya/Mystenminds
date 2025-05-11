@@ -13,6 +13,7 @@ import { useSwipeable } from "react-swipeable"
 import "../i18n"
 import { useWallets,ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import "@mysten/dapp-kit/dist/index.css";
+import { Sidebar } from "./components/Sidebar"
 
 export default function Home() {
   const [question, setQuestion] = useState("")
@@ -207,60 +208,56 @@ export default function Home() {
   })
 
   return (
-    <div className="min-h-screen bg-[#2a1a8a] text-white flex flex-col" {...swipeHandlers}>
+    <div className="min-h-screen bg-[#2a1a8a] text-white flex" {...swipeHandlers}>
+      <Sidebar />
       <header className="container mx-auto py-4 px-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold robot-logo">
-            M
-          </div>
-          <h1 className="text-2xl font-bold hidden sm:block">MysteinMinds</h1>
-        </div>
+          <div className="flex-1"></div> {/* Spacer */}
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white"
-              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-            >
-              <Globe size={20} />
-            </Button>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white"
+                onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              >
+                <Globe size={20} />
+              </Button>
 
-            {showLanguageMenu && (
-              <div className="absolute right-0 mt-2 w-40 bg-[#1a1040] rounded-lg shadow-lg overflow-hidden z-50 border border-gray-800">
-                <div className="p-1">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-left"
-                    onClick={() => changeLanguage("en")}
-                  >
-                    <span className={i18n.language === "en" ? "text-blue-400" : "text-white"}>English</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-left"
-                    onClick={() => changeLanguage("fr")}
-                  >
-                    <span className={i18n.language === "fr" ? "text-blue-400" : "text-white"}>French</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-left"
-                    onClick={() => changeLanguage("sw")}
-                  >
-                    <span className={i18n.language === "sw" ? "text-blue-400" : "text-white"}>Swahili</span>
-                  </Button>
+              {showLanguageMenu && (
+                <div className="absolute right-0 mt-2 w-40 bg-[#1a1040] rounded-lg shadow-lg overflow-hidden z-50 border border-gray-800">
+                  <div className="p-1">
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left"
+                      onClick={() => changeLanguage("en")}
+                    >
+                      <span className={i18n.language === "en" ? "text-blue-400" : "text-white"}>English</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left"
+                      onClick={() => changeLanguage("fr")}
+                    >
+                      <span className={i18n.language === "fr" ? "text-blue-400" : "text-white"}>French</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-left"
+                      onClick={() => changeLanguage("sw")}
+                    >
+                      <span className={i18n.language === "sw" ? "text-blue-400" : "text-white"}>Swahili</span>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="hidden sm:block">
-            <ConnectButton />
+            <div className="hidden sm:block">
+              <ConnectButton />
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
         <div className="max-w-4xl mx-auto w-full">
