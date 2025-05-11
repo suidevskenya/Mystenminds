@@ -14,6 +14,7 @@ import "../i18n"
 import { useWallets,ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import "@mysten/dapp-kit/dist/index.css";
 import { Sidebar } from "./components/Sidebar"
+import {SidebarProvider} from  '@/app/context/SidebarContext'
 
 export default function Home() {
   const [question, setQuestion] = useState("")
@@ -208,9 +209,13 @@ export default function Home() {
   })
 
   return (
-    <div className="min-h-screen bg-[#2a1a8a] text-white flex" {...swipeHandlers}>
-      <Sidebar />
-      <header className="container mx-auto py-4 px-4 flex justify-between items-center">
+    <div className="min-h-screen bg-[#2a1a8a] text-white flex">
+      <div className="w-64 fixed top-0 left-0 bottom-0 z-40">
+        <Sidebar />
+      </div>
+
+      <div className = "flex-1 ml-0 lg:ml-64" {...swipeHandlers}>
+        <header className="container mx-auto py-4 px-4 flex justify-between items-center">
           <div className="flex-1"></div> {/* Spacer */}
 
           <div className="flex items-center gap-3">
@@ -439,8 +444,13 @@ export default function Home() {
         </div>
       </main>
 
+      </div>
+      
       {/* Mobile Navigation */}
-      <MobileNav isConnected={isConnected} />
+      <SidebarProvider>
+            <MobileNav isConnected={isConnected} />
+      </SidebarProvider>
+      
 
       {/* Wallet Connection Dialog */}
       <Dialog open={showWalletDialog} onOpenChange={setShowWalletDialog}>

@@ -19,6 +19,7 @@ import {
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { useWallet } from "@/hooks/use-wallet"
+import {ConnectButton} from "@mysten/dapp-kit";
 
 interface SidebarProps {
   className?: string
@@ -36,37 +37,24 @@ export function Sidebar({ className = "" }: SidebarProps) {
 
   const menuItems = [
     {
-      id: "events",
-      label: t("menu_home"),
+      id: "home",
+      label: t("home"),
       icon: <Home size={20} />,
       href: "/",
     },
     {
-      id: "bootcamps",
-      label: t("menu_chat"),
+      id: "events",
+      label: t("events"),
       icon: <MessageSquare size={20} />,
-      href: "/chat",
+      href: "/",
       requiresAuth: true,
     },
     {
-      id: "hackathons",
-      label: t("menu_hackathons"),
+      id: "communities",
+      label: t("communities"),
       icon: <History size={20} />,
       href: "/history",
       requiresAuth: true,
-    },
-    {
-      id: "bookmarks",
-      label: t("menu_bookmarks"),
-      icon: <Bookmark size={20} />,
-      href: "/bookmarks",
-      requiresAuth: true,
-    },
-    {
-      id: "community",
-      label: t("menu_community"),
-      icon: <Users size={20} />,
-      href: "/community",
     },
     {
       id: "wallet",
@@ -76,22 +64,10 @@ export function Sidebar({ className = "" }: SidebarProps) {
       requiresAuth: true,
     },
     {
-      id: "help",
-      label: t("menu_help"),
+      id: "chathistory",
+      label: t("chats"),
       icon: <HelpCircle size={20} />,
-      href: "/help",
-    },
-    {
-      id: "about",
-      label: t("menu_about"),
-      icon: <Info size={20} />,
-      href: "/about",
-    },
-    {
-      id: "settings",
-      label: t("menu_settings"),
-      icon: <Settings size={20} />,
-      href: "/settings",
+      href: "/",
     },
   ]
 
@@ -130,11 +106,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
         {/* Menu Items */}
         <nav className="mt-6 flex-1 px-2">
           <ul className="space-y-2">
-            {menuItems.map((item) => {
-              if (item.requiresAuth && !isConnected) {
-                return null
-              }
-              
+            {menuItems.map((item) => {  
               return (
                 <li key={item.id}>
                   <Link href={item.href} passHref>
@@ -160,32 +132,6 @@ export function Sidebar({ className = "" }: SidebarProps) {
             })}
           </ul>
         </nav>
-
-        {/* Connection Status */}
-        <div className="mb-4 px-3 py-2">
-          {isConnected ? (
-            <div className={`flex items-center ${
-              isExpanded ? "justify-start" : "justify-center"
-            } rounded-lg bg-[#2a1a8a] px-3 py-2 text-xs`}>
-              <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-              {isExpanded && (
-                <span className="text-green-300">{t("status_connected")}</span>
-              )}
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              className={`w-full bg-transparent border-blue-600 text-blue-300 hover:bg-blue-900 hover:text-blue-100 ${
-                !isExpanded && "px-0"
-              }`}
-              onClick={() => router.push("/wallet")}
-            >
-              <Wallet size={16} className={!isExpanded ? "mx-auto" : "mr-2"} />
-              {isExpanded && t("connect")}
-            </Button>
-          )}
-        </div>
       </div>
 
       {/* Toggle Button for Mobile */}
