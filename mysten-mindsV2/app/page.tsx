@@ -11,7 +11,7 @@ import { useWallet } from "@/hooks/use-wallet"
 import { MobileNav } from "@/components/mobile-nav"
 import { useSwipeable } from "react-swipeable"
 import "../i18n"
-import { useWallets,ConnectButton } from "@mysten/dapp-kit";
+import { useWallets,ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
 import "@mysten/dapp-kit/dist/index.css";
 
 export default function Home() {
@@ -184,6 +184,21 @@ export default function Home() {
     navigator.clipboard.writeText(text)
   }
 
+  function ConnectedAccount() {
+	const account = useCurrentAccount();
+
+	if (!account) {
+		return null;
+	}
+
+	return (
+		<div className="bg-blue-500 text-white p-4 rounded-lg shadow-md">
+			<p className="text-sm font-semibold">Connected to:</p>
+			<p className="text-lg font-bold">{account.address}</p>
+		</div>
+	);
+  }
+
   // Swipe handlers for mobile
   const swipeHandlers = useSwipeable({
     onSwipedUp: () => !showSearchBox && setShowSearchBox(true),
@@ -242,26 +257,17 @@ export default function Home() {
           </div>
 
           <div className="hidden sm:block">
-            {connectedWallet && address && (
-            <div className="mb-8 bg-white/10 p-4 rounded-lg max-w-3xl mx-auto">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-sm opacity-70">Connected Wallet</span>
-                  <p className="font-mono">{shortenAddress(address)}</p>
-                </div>
-                <div className="bg-green-500 rounded-full w-3 h-3"></div>
-              </div>
-            </div>
-          )}
+            <ConnectButton />
           </div>
         </div>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
         <div className="max-w-4xl mx-auto w-full">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4 sm:mb-6 glow-text">{t("hero_title")}</h2>
+          <ConnectedAccount />
+          <h2 className="text-3xl sm:text-5xl font-bold mt-20 mb-4 sm:mb-6 glow-text">{t("hero_title")}</h2>
           <p className="text-base sm:text-xl mb-8 sm:mb-12 max-w-3xl mx-auto">{t("hero_description")}</p>
-
+          
           <div className="flex flex-col items-center justify-center">
             {!showSearchBox ? (
               <div className="flex flex-col items-center">
