@@ -11,6 +11,7 @@ import { useAIChat } from "@/hooks/use-ai-chat"
 import { MobileNav } from "@/components/mobile-nav"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card"
+import { SidebarProvider } from "@/app/context/SidebarContext"
 
 interface TelegramGroup {
   id: string
@@ -36,7 +37,7 @@ export default function ChatPage() {
 
   // Get the chat session
   const chatId = Array.isArray(id) ? id[0] : id
-  const chatSession = getChatById(chatId)
+  const chatSession = getChatById(chatId ?? "")
 
   // Redirect to connect page if not authenticated
   useEffect(() => {
@@ -213,8 +214,10 @@ export default function ChatPage() {
           </div>
         </div>
       </main>
-
-      <MobileNav isConnected={isAuthenticated} />
+      <SidebarProvider>
+          <MobileNav isConnected={isAuthenticated} />
+      </SidebarProvider>
+      
     </div>
   )
 }

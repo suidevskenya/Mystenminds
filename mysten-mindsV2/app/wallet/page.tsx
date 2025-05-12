@@ -8,6 +8,7 @@ import { useWallet } from "@/hooks/use-wallet"
 import { useTranslation } from "react-i18next"
 import { MobileNav } from "@/components/mobile-nav"
 import Link from "next/link"
+import {SidebarProvider} from '@/app/context/SidebarContext'
 
 export default function WalletPage() {
   const { isConnected, walletAddress, balance, disconnect } = useWallet()
@@ -177,8 +178,10 @@ export default function WalletPage() {
           {t("disconnect_wallet")}
         </Button>
       </main>
-
-      <MobileNav isConnected={isConnected} />
+      <SidebarProvider>
+            <MobileNav isConnected={isConnected} />
+      </SidebarProvider>  
+      
     </div>
   )
 }

@@ -1,11 +1,13 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
+import "./global.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { PWARegister } from "@/components/pwa-register"
+import { SuiProviderWrapper } from "./components/SuiProvider"
 
 const inter = Inter({ subsets: ["latin"] })
+
 
 export const metadata: Metadata = {
   title: "MysteinMinds - Your AI Guide to the SUI Ecosystem",
@@ -39,8 +41,13 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
+          
+             <SuiProviderWrapper>
+              {children}
+            </SuiProviderWrapper>     
           <PWARegister />
+         
+           
         </ThemeProvider>
       </body>
     </html>

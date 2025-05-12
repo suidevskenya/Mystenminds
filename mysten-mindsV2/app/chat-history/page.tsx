@@ -9,6 +9,7 @@ import { ArrowLeft, MessageSquare, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
+import {SidebarProvider } from '@/app/context/SidebarContext'
 
 export default function ChatHistoryPage() {
   const { isAuthenticated, chatSessions, currentChatId, setCurrentChatId, createNewChat } = useWallet()
@@ -127,8 +128,10 @@ export default function ChatHistoryPage() {
           <Plus size={24} />
         </Button>
       </div>
-
-      <MobileNav isConnected={isAuthenticated} />
+      <SidebarProvider>
+        <MobileNav isConnected={isAuthenticated} />
+      </SidebarProvider>
+      
     </div>
   )
 }

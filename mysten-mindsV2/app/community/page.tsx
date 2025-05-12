@@ -7,6 +7,7 @@ import { TelegramGroups } from "@/components/telegram-groups"
 import { MobileNav } from "@/components/mobile-nav"
 import { useWallet } from "@/hooks/use-wallet"
 import { useTranslation } from "react-i18next"
+import {SidebarProvider} from '@/app/context/SidebarContext'
 
 export default function CommunityPage() {
   const { isConnected } = useWallet()
@@ -32,8 +33,10 @@ export default function CommunityPage() {
           <TelegramGroups />
         </div>
       </main>
-
-      <MobileNav isConnected={isConnected} />
+      <SidebarPRovider>
+        <MobileNav isConnected={isConnected} />
+      </SidebarPRovider>
+      
     </div>
   )
 }
