@@ -5,7 +5,6 @@ import "./global.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { PWARegister } from "@/components/pwa-register"
 import { SuiProviderWrapper } from "./components/SuiProvider"
-import { SidebarProvider } from "./context/SidebarContext"
 
 const inter = Inter({ subsets: ["latin"] })
 

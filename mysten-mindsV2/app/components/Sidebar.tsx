@@ -7,19 +7,26 @@ import {
   Home, 
   MessageSquare, 
   Wallet, 
-  Settings, 
   ChevronLeft, 
   ChevronRight,
   HelpCircle,
   History,
   Bookmark,
+  ChevronDown,
+  ChevronUp,
   Users,
-  Info
+  CalendarSearch,
+  FolderOpenDot,
+  Handshake,
+  Laptop,
+  Book,
+  MessageCircle,
+  Twitter,
+  Bus,
+  Gamepad2,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
-import { useWallet } from "@/hooks/use-wallet"
-import {ConnectButton} from "@mysten/dapp-kit";
 
 interface SidebarProps {
   className?: string
@@ -27,12 +34,17 @@ interface SidebarProps {
 
 export function Sidebar({ className = "" }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [expandedItems, setExpandedItems] = useState<string[]>([]) // Track expanded parent items
   const { t } = useTranslation()
-  const router = useRouter()
-  const { isConnected } = useWallet()
-
+  
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded)
+  }
+
+  const toggleItem = (id: string) => {
+    setExpandedItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    )
   }
 
   const menuItems = [
@@ -43,8 +55,8 @@ export function Sidebar({ className = "" }: SidebarProps) {
       href: "/",
     },
     {
-      id: "events",
-      label: t("events"),
+      id: "chats",
+      label: t("chats"),
       icon: <MessageSquare size={20} />,
       href: "/",
       requiresAuth: true,
@@ -52,21 +64,63 @@ export function Sidebar({ className = "" }: SidebarProps) {
     {
       id: "communities",
       label: t("communities"),
-      icon: <History size={20} />,
-      href: "/history",
-      requiresAuth: true,
+      icon: <Users size={20} />,
+      children: [
+        {
+          id: "telegram",
+          label: t("telegram"),
+          icon: <MessageCircle size={16} />,
+          href: "/telegram",
+        },
+        {
+          id: "twitter",
+          label: t("X"),
+          icon: <Twitter size={16} />,
+          href: "/x-account",
+        },
+      ],
     },
     {
-      id: "wallet",
-      label: t("menu_wallet"),
-      icon: <Wallet size={20} />,
-      href: "/wallet",
-      requiresAuth: true,
+      id: "events",
+      label: t("events"),
+      icon: <CalendarSearch size={20} />,
+      children: [
+        {
+          id: "IRL",
+          label: t("IRL events"),
+          icon: <Handshake size={16} />,
+          href:"/lumaevent"
+        },
+        {
+          id:"Hackathons",
+          label:t("hackathons"),
+          icon: <Laptop size={16} />,
+          href:"/sui-hackathon"
+        },
+        {
+          id:"Bootcamps",
+          label:t('bootcamps'),
+          icon: <Book size={16} />,
+          href:"/bootcamps"
+        },
+        {
+          id:"Campustours",
+          label:t('campustours'),
+          icon: <Bus size={16} />,
+          href:"/campustours"
+        },
+        {
+          id:"Gaming",
+          label:t('Gaming events'),
+          icon: < Gamepad2 size={16} />,
+          href:"/gaming-events"
+        }
+      ]
     },
     {
-      id: "chathistory",
-      label: t("chats"),
-      icon: <HelpCircle size={20} />,
+      id: "projects",
+      label: t("projects"),
+      icon: <FolderOpenDot size={20} />,
       href: "/",
     },
   ]
@@ -106,27 +160,57 @@ export function Sidebar({ className = "" }: SidebarProps) {
         {/* Menu Items */}
         <nav className="mt-6 flex-1 px-2">
           <ul className="space-y-2">
-            {menuItems.map((item) => {  
+            {menuItems.map((item) => {
+              const isParentExpanded = expandedItems.includes(item.id)
               return (
                 <li key={item.id}>
-                  <Link href={item.href} passHref>
-                    <div
-                      className={`flex cursor-pointer items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all
-                      ${
-                        isExpanded 
-                          ? "justify-start" 
-                          : "justify-center"
-                      }
-                      hover:bg-[#2a1a8a] hover:text-blue-300`}
-                    >
-                      <span className={isExpanded ? "" : "mx-auto"}>
-                        {item.icon}
-                      </span>
-                      {isExpanded && (
+                  <div
+                    className={`flex cursor-pointer items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all
+                    ${
+                      isExpanded 
+                        ? "justify-start" 
+                        : "justify-center"
+                    }
+                    hover:bg-[#2a1a8a] hover:text-blue-300`}
+                    onClick={() => item.children && toggleItem(item.id)}
+                  >
+                    <span className={isExpanded ? "" : "mx-auto"}>
+                      {item.icon}
+                    </span>
+                    {isExpanded && (
+                      <>
                         <span className="ml-3 text-sm">{item.label}</span>
-                      )}
-                    </div>
-                  </Link>
+                        {item.children && (
+                          <span className="ml-auto">
+                            {isParentExpanded ? (
+                              <ChevronUp size={16} />
+                            ) : (
+                              <ChevronDown size={16} />
+                            )}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {item.children && isParentExpanded && isExpanded && (
+                    <ul className="ml-6 mt-2 space-y-1">
+                      {item.children.map((child) => (
+                        <li key={child.id}>
+                          <Link href={child.href} passHref>
+                            <div
+                              className={`flex cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-medium transition-all
+                              hover:bg-[#2a1a8a] hover:text-blue-300`}
+                            > 
+                              {child.icon && (
+                                <span className="text-gray-400">{child.icon}</span>
+                              )}
+                              <span className="ml-3">{child.label}</span>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               )
             })}
