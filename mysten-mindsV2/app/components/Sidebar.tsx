@@ -1,32 +1,25 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { 
   Home, 
   MessageSquare, 
-  Wallet, 
   ChevronLeft, 
   ChevronRight,
-  HelpCircle,
-  History,
-  Bookmark,
-  ChevronDown,
   ChevronUp,
+  ChevronDown,
   Users,
   CalendarSearch,
   FolderOpenDot,
-  Handshake,
-  Laptop,
-  Book,
   MessageCircle,
   Twitter,
-  Bus,
-  Gamepad2,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
+import { EventsDialog } from "@/components/EventsDialog"
+import { ProjectsDialog } from "@/components/ProjectsDialog"
+import { ChatsDialog } from "@/components/ChatsDialog"
 
 interface SidebarProps {
   className?: string
@@ -36,7 +29,10 @@ export function Sidebar({ className = "" }: SidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const [expandedItems, setExpandedItems] = useState<string[]>([]) // Track expanded parent items
   const { t } = useTranslation()
-  
+  const [isEventsDialogOpen, setIsEventsDialogOpen] = useState(false)
+  const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false)
+  const [isChatsDialogOpen, setIsChatsDialogOpen] = useState(false)
+
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded)
   }
@@ -45,6 +41,30 @@ export function Sidebar({ className = "" }: SidebarProps) {
     setExpandedItems((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     )
+  }
+
+  const openEventsDialog = () => {
+    setIsEventsDialogOpen(true)
+  }
+
+  const closeEventsDialog = () => {
+    setIsEventsDialogOpen(false)
+  }
+
+  const openProjectsDialog = () => {
+    setIsProjectsDialogOpen(true)
+  }
+
+  const closeProjectsDialog = () => {
+    setIsProjectsDialogOpen(false)
+  }
+
+  const openChatsDialog = () => {
+    setIsChatsDialogOpen(true)
+  }
+
+  const closeChatsDialog = () => {
+    setIsChatsDialogOpen(false)
   }
 
   const menuItems = [
@@ -58,7 +78,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
       id: "chats",
       label: t("chats"),
       icon: <MessageSquare size={20} />,
-      href: "/",
+      onClick: openChatsDialog,
       requiresAuth: true,
     },
     {
@@ -84,44 +104,13 @@ export function Sidebar({ className = "" }: SidebarProps) {
       id: "events",
       label: t("events"),
       icon: <CalendarSearch size={20} />,
-      children: [
-        {
-          id: "IRL",
-          label: t("IRL events"),
-          icon: <Handshake size={16} />,
-          href:"/lumaevent"
-        },
-        {
-          id:"Hackathons",
-          label:t("hackathons"),
-          icon: <Laptop size={16} />,
-          href:"/sui-hackathon"
-        },
-        {
-          id:"Bootcamps",
-          label:t('bootcamps'),
-          icon: <Book size={16} />,
-          href:"/bootcamps"
-        },
-        {
-          id:"Campustours",
-          label:t('campustours'),
-          icon: <Bus size={16} />,
-          href:"/campustours"
-        },
-        {
-          id:"Gaming",
-          label:t('Gaming events'),
-          icon: < Gamepad2 size={16} />,
-          href:"/gaming-events"
-        }
-      ]
+      onClick: openEventsDialog,
     },
     {
       id: "projects",
       label: t("projects"),
       icon: <FolderOpenDot size={20} />,
-      href: "/",
+      onClick: openProjectsDialog,
     },
   ]
 
@@ -162,36 +151,60 @@ export function Sidebar({ className = "" }: SidebarProps) {
           <ul className="space-y-2">
             {menuItems.map((item) => {
               const isParentExpanded = expandedItems.includes(item.id)
+              const content = (
+                <div
+                  className={`flex cursor-pointer items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all
+                  ${
+                    isExpanded 
+                      ? "justify-start" 
+                      : "justify-center"
+                  }
+                  hover:bg-[#2a1a8a] hover:text-blue-300`}
+                  onClick={() => {
+                    if (item.children) {
+                      toggleItem(item.id)
+                    } else if (item.onClick) {
+                      item.onClick()
+                    }
+                  }}
+                >
+                  <span className={isExpanded ? "" : "mx-auto"}>
+                    {item.icon}
+                  </span>
+                  {isExpanded && (
+                    <>
+                      <span className="ml-3 text-sm">{item.label}</span>
+                      {item.children && (
+                        <span className="ml-auto">
+                          {isParentExpanded ? (
+                            <ChevronUp size={16} />
+                          ) : (
+                            <ChevronDown size={16} />
+                          )}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+              )
               return (
                 <li key={item.id}>
-                  <div
-                    className={`flex cursor-pointer items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all
-                    ${
-                      isExpanded 
-                        ? "justify-start" 
-                        : "justify-center"
-                    }
-                    hover:bg-[#2a1a8a] hover:text-blue-300`}
-                    onClick={() => item.children && toggleItem(item.id)}
-                  >
-                    <span className={isExpanded ? "" : "mx-auto"}>
-                      {item.icon}
-                    </span>
-                    {isExpanded && (
-                      <>
-                        <span className="ml-3 text-sm">{item.label}</span>
-                        {item.children && (
-                          <span className="ml-auto">
-                            {isParentExpanded ? (
-                              <ChevronUp size={16} />
-                            ) : (
-                              <ChevronDown size={16} />
-                            )}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
+                  {item.href && !item.children ? (
+                    <Link href={item.href} passHref>
+                      {content}
+                    </Link>
+                  ) : (
+                    content
+                  )}
+                  {item.id === "events" && isExpanded && (
+                    <EventsDialog open={isEventsDialogOpen} onOpen={() => setIsEventsDialogOpen(true)} onClose={closeEventsDialog} />
+                  )}
+                  {item.id === "projects" && isExpanded && (
+                    <ProjectsDialog open={isProjectsDialogOpen} onOpen={() => setIsProjectsDialogOpen(true)} onClose={closeProjectsDialog} />
+                  )}
+                  {item.id === "chats" && isExpanded && (
+                    <ChatsDialog open={isChatsDialogOpen} onOpen={() => setIsChatsDialogOpen(true)} onClose={closeChatsDialog} />
+                  )}
                   {item.children && isParentExpanded && isExpanded && (
                     <ul className="ml-6 mt-2 space-y-1">
                       {item.children.map((child) => (
@@ -216,7 +229,6 @@ export function Sidebar({ className = "" }: SidebarProps) {
             })}
           </ul>
         </nav>
-      </div>
 
       {/* Toggle Button for Mobile */}
       <Button
@@ -228,5 +240,6 @@ export function Sidebar({ className = "" }: SidebarProps) {
         {isExpanded ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
       </Button>
     </div>
+  </div>
   )
 }
