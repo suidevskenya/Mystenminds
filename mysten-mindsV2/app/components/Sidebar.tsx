@@ -96,7 +96,7 @@ export function Sidebar({ className = "" }: SidebarProps) {
           id: "twitter",
           label: t("X"),
           icon: <Twitter size={16} />,
-          href: "/x-account",
+          href: "https://x.com/SuiNetworkKE",
         },
       ],
     },

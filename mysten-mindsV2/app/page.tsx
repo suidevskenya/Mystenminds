@@ -27,8 +27,6 @@ export default function Home() {
   const { t, i18n } = useTranslation()
   const typingRef = useRef<NodeJS.Timeout | null>(null)
   const router = useRouter()
-
-  const wallets = useWallets()
   const currentAccount = useCurrentAccount()
   const isConnected = !!currentAccount
   
