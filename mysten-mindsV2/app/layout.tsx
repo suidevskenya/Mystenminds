@@ -6,7 +6,9 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { PWARegister } from "@/components/pwa-register"
 import { SuiProviderWrapper } from "./components/SuiProvider"
 
+
 const inter = Inter({ subsets: ["latin"] })
+
 
 
 export const metadata: Metadata = {
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-    generator: 'v0.dev'
+    
 }
 
 export default function RootLayout({
@@ -41,10 +43,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          
              <SuiProviderWrapper>
-              {children}
-            </SuiProviderWrapper>     
+                {children}
+              </SuiProviderWrapper>     
           <PWARegister />
          
            

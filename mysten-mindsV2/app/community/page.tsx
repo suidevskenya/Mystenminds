@@ -33,9 +33,9 @@ export default function CommunityPage() {
           <TelegramGroups />
         </div>
       </main>
-      <SidebarPRovider>
+      <SidebarProvider>
         <MobileNav isConnected={isConnected} />
-      </SidebarPRovider>
+      </SidebarProvider>
       
     </div>
   )

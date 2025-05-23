@@ -19,6 +19,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+import { EventsDialog } from "../EventsDialog"
+
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
@@ -360,7 +362,14 @@ const SidebarHeader = React.forwardRef<
       data-sidebar="header"
       className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
-    />
+    >
+      <EventsDialog 
+        open={false} 
+        onOpen={() => console.log("Dialog opened")} 
+        onClose={() => console.log("Dialog closed")} 
+      />
+      {props.children}
+    </div>
   )
 })
 SidebarHeader.displayName = "SidebarHeader"

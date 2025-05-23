@@ -1,64 +1,27 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Send, ExternalLink } from "lucide-react"
+import { ArrowLeft, Send } from "lucide-react"
 import Link from "next/link"
-import { useWallet } from "@/hooks/use-wallet"
-import { useAIChat } from "@/hooks/use-ai-chat"
+import Image from "next/image"
+import { Sidebar } from "@/app/components/Sidebar"
+import { SidebarProvider } from '@/app/context/SidebarContext'
 import { MobileNav } from "@/components/mobile-nav"
-import { useTranslation } from "react-i18next"
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card"
-import { SidebarProvider } from "@/app/context/SidebarContext"
-
-interface TelegramGroup {
-  id: string
-  name: string
-  url: string
-  description: string
-  memberCount?: number
-  language: string
-  category: string
-}
+import ReactMarkdown from "react-markdown"
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit"
 
 export default function ChatPage() {
-  const { id } = useParams()
-  const router = useRouter()
-  const { t } = useTranslation()
-  const { isAuthenticated, getChatById, addMessage, currentChatId, setCurrentChatId } = useWallet()
-  const { processMessage, isProcessing } = useAIChat()
-
+  const [messages, setMessages] = useState([
+    { role: "system", content: "Welcome to MysteinMinds! How can I help you with SUI blockchain today?", timestamp: new Date() },
+  ])
   const [input, setInput] = useState("")
-  const [robotState, setRobotState] = useState("idle") // idle, thinking, speaking
-  const [suggestedGroups, setSuggestedGroups] = useState<TelegramGroup[]>([])
+  const [robotState, setRobotState] = useState("idle")
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  // Get the chat session
-  const chatId = Array.isArray(id) ? id[0] : id
-  const chatSession = getChatById(chatId ?? "")
-
-  // Redirect to connect page if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/connect")
-    }
-  }, [isAuthenticated, router])
-
-  // Redirect to chat history if chat doesn't exist
-  useEffect(() => {
-    if (isAuthenticated && !chatSession) {
-      router.push("/chat-history")
-    }
-  }, [isAuthenticated, chatSession, router])
-
-  // Set current chat ID
-  useEffect(() => {
-    if (chatId && chatId !== currentChatId) {
-      setCurrentChatId(chatId)
-    }
-  }, [chatId, currentChatId, setCurrentChatId])
+  const router = useRouter()
+  const account = useCurrentAccount()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -66,158 +29,148 @@ export default function ChatPage() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [chatSession?.messages, suggestedGroups])
+  }, [messages])
 
-  const handleSend = async () => {
-    if (!input.trim() || !isAuthenticated || isProcessing) return
+  const handleSend = () => {
+    if (!input.trim()) return
 
-    // Add user message
-    addMessage({
-      role: "user",
-      content: input,
-      timestamp: Date.now(),
-    })
-
-    const userMessage = input
+    const newMessage = { role: "user", content: input, timestamp: new Date() }
+    setMessages([...messages, newMessage])
     setInput("")
-
-    // Show robot thinking
     setRobotState("thinking")
-    setSuggestedGroups([])
 
-    try {
-      // Process the message with AI
-      const response = await processMessage(userMessage)
-
-      // Add AI response
-      addMessage({
-        role: "system",
-        content: response.text,
-        timestamp: Date.now(),
-      })
-
-      // Set suggested Telegram groups if any
-      if (response.telegramGroups && response.telegramGroups.length > 0) {
-        setSuggestedGroups(response.telegramGroups)
-      } else {
-        setSuggestedGroups([])
-      }
-
+    setTimeout(() => {
       setRobotState("speaking")
-
-      setTimeout(() => {
-        setRobotState("idle")
-      }, 1000)
-    } catch (error) {
-      console.error("Error processing message:", error)
-
-      // Add error message
-      addMessage({
-        role: "system",
-        content: "I'm sorry, I encountered an error. Please try again.",
-        timestamp: Date.now(),
-      })
-
-      setRobotState("idle")
-    }
-  }
-
-  if (!isAuthenticated || !chatSession) {
-    return null
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "system",
+          content:
+            "I'm your AI guide to the SUI ecosystem.\n\n*Ask me about:*\n- SUI blockchain\n- Move programming\n- Mysten Labs",
+          timestamp: new Date(),
+        },
+      ])
+      setTimeout(() => setRobotState("idle"), 1000)
+    }, 1500)
   }
 
   return (
-    <div className="min-h-screen bg-[#2a1a8a] text-white flex flex-col">
-      <header className="sticky top-0 z-10 bg-[#1a1040] backdrop-blur-md border-b border-gray-800 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link href="/chat-history">
-              <Button variant="ghost" size="icon" className="text-white">
-                <ArrowLeft size={20} />
-              </Button>
-            </Link>
-            <h1 className="text-lg font-medium truncate max-w-[200px]">{chatSession.title}</h1>
-          </div>
-          <div className="robot-status-indicator">
-            <div className={`robot-status ${robotState}`}>
-              {robotState === "idle" && t("status_idle")}
-              {robotState === "thinking" && t("status_thinking")}
-              {robotState === "speaking" && t("status_speaking")}
-            </div>
-          </div>
+    <SidebarProvider>
+      <div className="min-h-screen bg-[#2a1a8a] text-white flex">
+        <div className="w-64 fixed top-0 left-0 bottom-0 z-40">
+          <Sidebar />
         </div>
-      </header>
 
-      <main className="flex-1 flex flex-col p-4 pb-20 overflow-hidden">
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-          {chatSession.messages.map((message) => (
-            <div
-              key={message.id}
-              className={`p-3 rounded-lg max-w-[85%] ${
-                message.role === "user" ? "bg-blue-600 ml-auto" : "bg-gray-700 mr-auto"
-              }`}
-            >
-              <div>{message.content}</div>
+        <div className="flex-1 ml-64 flex flex-col">
+          <header className="container mx-auto py-4 px-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Link href="/">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-2xl font-bold">
+                    M
+                  </div>
+                  <h1 className="text-2xl font-bold">MysteinMinds</h1>
+                </div>
+              </Link>
             </div>
-          ))}
+            <div className="flex items-center gap-4">
+              {account && (
+                <div className="text-sm bg-white/10 px-3 py-1 rounded-md">
+                  Connected to {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                </div>
+              )}
+              <ConnectButton 
+                className="!bg-blue-500 hover:!bg-blue-600 !text-white !px-4 !py-2 !rounded-md"
+              />
+            </div>
+          </header>
 
-          {/* Telegram Group Suggestions */}
-          {suggestedGroups.length > 0 && (
-            <div className="bg-gray-800/50 p-3 rounded-lg mr-auto max-w-[85%]">
-              <h3 className="text-sm font-medium mb-2">{t("suggested_telegram_groups")}</h3>
-              <div className="space-y-2">
-                {suggestedGroups.map((group) => (
-                  <Card key={group.id} className="bg-gray-700/50 border-gray-600">
-                    <CardContent className="p-3">
-                      <CardTitle className="text-sm mb-1">{group.name}</CardTitle>
-                      <p className="text-xs text-gray-300 line-clamp-2">{group.description}</p>
-                    </CardContent>
-                    <CardFooter className="p-2 pt-0">
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs bg-blue-600/20 border-blue-500/30 hover:bg-blue-600/30"
-                      >
-                        <a href={group.url} target="_blank" rel="noopener noreferrer">
-                          {t("join_group")}
-                          <ExternalLink size={12} className="ml-1" />
-                        </a>
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+          <main className="flex-1 flex flex-col p-4 max-w-4xl mx-auto w-full">
+            <div className="mb-4">
+              <Link href="/">
+                <Button variant="ghost" className="text-white">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+                </Button>
+              </Link>
+            </div>
+
+            <div className="sticky top-0 z-10 flex items-center gap-4 mb-6 bg-[#2a1a8a]/80 backdrop-blur-sm py-2">
+              <div className="w-16 h-16 relative flex-shrink-0">
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-05-08%20at%2023.36.06_6a4f54c7.jpg-Hr2rzfTILfPTPym2oftFKyvqoR9iCO.jpeg"
+                  alt="AI Assistant Robot"
+                  width={40}
+                  height={40}
+                  className={`object-contain transition-all duration-300 ${robotState === "thinking" ? "animate-pulse" : ""} ${robotState === "speaking" ? "scale-110" : ""}`}
+                />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">MysteinMinds AI</h2>
+                <p className="text-sm text-blue-300">
+                  {robotState === "idle" && "Ready to help"}
+                  {robotState === "thinking" && "Thinking..."}
+                  {robotState === "speaking" && "Responding..."}
+                </p>
               </div>
             </div>
-          )}
 
-          <div ref={messagesEndRef} />
-        </div>
+            {robotState === "thinking" && (
+              <div className="text-sm text-blue-200 italic mb-2">MysteinMinds AI is typing...</div>
+            )}
 
-        <div className="sticky bottom-0 bg-[#2a1a8a]/80 backdrop-blur-md pt-2">
-          <div className="flex gap-2 bg-[#1a1040] p-3 rounded-lg">
-            <Input
-              placeholder={t("ask_placeholder")}
-              className="bg-[#0d0a20] border-none text-white"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-              disabled={robotState !== "idle"}
-            />
-            <Button
-              onClick={handleSend}
-              className="bg-blue-600 hover:bg-blue-700"
-              disabled={robotState !== "idle" || !input.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+            <div className="flex-1 bg-white/10 rounded-lg p-4 mb-4 overflow-y-auto">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`mb-4 p-3 rounded-lg max-w-[80%] text-sm ${
+                    message.role === "user"
+                      ? "bg-blue-600 ml-auto text-white shadow"
+                      : "bg-white/10 border border-white/20 text-white flex items-start gap-2"
+                  }`}
+                >
+                  {message.role === "system" && (
+                    <div className="w-8 h-8 relative flex-shrink-0 mt-1">
+                      <Image
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Image%202025-05-08%20at%2023.36.06_6a4f54c7.jpg-Hr2rzfTILfPTPym2oftFKyvqoR9iCO.jpeg"
+                        alt="AI Assistant Robot"
+                        width={32}
+                        height={32}
+                        className="object-contain"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div className="prose prose-invert max-w-full">
+                      <ReactMarkdown>
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                    <div className="mt-1 text-xs text-blue-200 opacity-70">
+                      {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="flex gap-2 bg-white/10 p-3 rounded-lg">
+              <Input
+                placeholder="Ask anything about SUI blockchain..."
+                className="bg-white/20 border-none text-white"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                autoFocus
+              />
+              <Button onClick={handleSend} className="bg-blue-500 hover:bg-blue-600">
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </main>
+          <MobileNav isConnected={!!account} />
         </div>
-      </main>
-      <SidebarProvider>
-          <MobileNav isConnected={isAuthenticated} />
-      </SidebarProvider>
-      
-    </div>
+      </div>
+    </SidebarProvider>
   )
 }
