@@ -7,6 +7,18 @@ export default function LandingPage() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   
+  // Typing animation states
+  const headerText = "Your AI Guide to the SUI Ecosystem";
+  const paragraphText = "Get instant answers to all your questions about SUI blockchain, Move programming, and the entire Mysten Labs ecosystem.";
+  
+  const [displayHeaderText, setDisplayHeaderText] = useState("");
+  const [displayParagraphText, setDisplayParagraphText] = useState("");
+  const [headerIndex, setHeaderIndex] = useState(0);
+  const [paragraphIndex, setParagraphIndex] = useState(0);
+  const [isHeaderDeleting, setIsHeaderDeleting] = useState(false);
+  const [isParagraphDeleting, setIsParagraphDeleting] = useState(false);
+  const [showParagraph, setShowParagraph] = useState(false);
+  
   const handleAskQuestion = () => {
     window.location.href = '/chat';
   };
@@ -26,6 +38,66 @@ export default function LandingPage() {
     setTouchEnd(e.changedTouches[0].clientY);
   };
   
+  // Header typing animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isHeaderDeleting && headerIndex < headerText.length) {
+        // Typing forward
+        setDisplayHeaderText(headerText.slice(0, headerIndex + 1));
+        setHeaderIndex(headerIndex + 1);
+      } else if (!isHeaderDeleting && headerIndex === headerText.length) {
+        // Start paragraph typing after header completes
+        if (!showParagraph) {
+          setShowParagraph(true);
+        }
+        // Pause at end before restarting header
+        setTimeout(() => {
+          setIsHeaderDeleting(true);
+        }, 3000);
+      } else if (isHeaderDeleting && headerIndex > 0) {
+        // Deleting backward
+        setDisplayHeaderText(headerText.slice(0, headerIndex - 1));
+        setHeaderIndex(headerIndex - 1);
+      } else if (isHeaderDeleting && headerIndex === 0) {
+        // Reset to start typing again
+        setIsHeaderDeleting(false);
+        setShowParagraph(false);
+        setParagraphIndex(0);
+        setDisplayParagraphText("");
+        setIsParagraphDeleting(false);
+      }
+    }, isHeaderDeleting ? 40 : 100);
+
+    return () => clearTimeout(timer);
+  }, [headerIndex, isHeaderDeleting, headerText, showParagraph]);
+  
+  // Paragraph typing animation
+  useEffect(() => {
+    if (!showParagraph) return;
+    
+    const timer = setTimeout(() => {
+      if (!isParagraphDeleting && paragraphIndex < paragraphText.length) {
+        // Typing forward
+        setDisplayParagraphText(paragraphText.slice(0, paragraphIndex + 1));
+        setParagraphIndex(paragraphIndex + 1);
+      } else if (!isParagraphDeleting && paragraphIndex === paragraphText.length) {
+        // Pause at end
+        setTimeout(() => {
+          setIsParagraphDeleting(true);
+        }, 2000);
+      } else if (isParagraphDeleting && paragraphIndex > 0) {
+        // Deleting backward
+        setDisplayParagraphText(paragraphText.slice(0, paragraphIndex - 1));
+        setParagraphIndex(paragraphIndex - 1);
+      } else if (isParagraphDeleting && paragraphIndex === 0) {
+        // Reset paragraph
+        setIsParagraphDeleting(false);
+      }
+    }, isParagraphDeleting ? 30 : 60);
+
+    return () => clearTimeout(timer);
+  }, [paragraphIndex, isParagraphDeleting, paragraphText, showParagraph]);
+  
   return (
     <div 
       className="flex flex-col items-center justify-center min-h-screen bg-indigo-900 text-white p-4"
@@ -33,14 +105,23 @@ export default function LandingPage() {
       onTouchEnd={handleTouchEnd}
     >
       <div className="max-w-3xl mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-          Your AI Guide to the SUI Ecosystem
-        </h1>
+        <div className="mb-6 h-20 md:h-24 lg:h-28 flex items-center justify-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold">
+            {displayHeaderText}
+            <span className="animate-pulse text-blue-400 font-bold">|</span>
+          </h1>
+        </div>
         
-        <p className="text-lg md:text-xl mb-12 max-w-2xl mx-auto">
-          Get instant answers to all your questions about SUI blockchain, Move
-          programming, and the entire Mysten Labs ecosystem.
-        </p>
+        <div className="mb-12 h-16 md:h-20 flex items-center justify-center">
+          <p className="text-lg md:text-xl max-w-2xl mx-auto">
+            {showParagraph && (
+              <>
+                {displayParagraphText}
+                <span className="animate-pulse text-blue-400 font-bold">|</span>
+              </>
+            )}
+          </p>
+        </div>
         
         <div className="mb-12 animate-bounce">
           {/* Robot illustration */}
