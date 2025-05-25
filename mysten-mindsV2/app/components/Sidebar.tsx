@@ -20,22 +20,20 @@ import { Button } from "@/components/ui/button"
 import { EventsDialog } from "@/components/EventsDialog"
 import { ProjectsDialog } from "@/components/ProjectsDialog"
 import { ChatsDialog } from "@/components/ChatsDialog"
+import { useSidebar } from '../context/SidebarContext' // Import the sidebar context
 
 interface SidebarProps {
   className?: string
 }
 
 export function Sidebar({ className = "" }: SidebarProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+  // Use the context instead of local state
+  const { isExpanded, toggleSidebar } = useSidebar()
   const [expandedItems, setExpandedItems] = useState<string[]>([]) // Track expanded parent items
   const { t } = useTranslation()
   const [isEventsDialogOpen, setIsEventsDialogOpen] = useState(false)
   const [isProjectsDialogOpen, setIsProjectsDialogOpen] = useState(false)
   const [isChatsDialogOpen, setIsChatsDialogOpen] = useState(false)
-
-  const toggleSidebar = () => {
-    setIsExpanded(!isExpanded)
-  }
 
   const toggleItem = (id: string) => {
     setExpandedItems((prev) =>
