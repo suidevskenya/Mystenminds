@@ -174,9 +174,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#2a1a8a] text-white flex">
-      <div className="w-64 fixed top-0 left-0 bottom-0 z-40">
-        <Sidebar />
-      </div>
+      <SidebarProvider>
+        <div className="w-64 fixed top-0 left-0 bottom-0 z-40">
+          <Sidebar />
+        </div>
+
+        {/* Mobile Navigation */}
+        <MobileNav isConnected={isConnected} />
+      </SidebarProvider>
 
       <div className="flex-1 ml-0 lg:ml-64" {...swipeHandlers}>
         <header className="container mx-auto py-4 px-4 flex justify-between items-center">
@@ -408,11 +413,6 @@ export default function Home() {
           </div>
         </main>
       </div>
-
-      {/* Mobile Navigation */}
-      <SidebarProvider>
-        <MobileNav isConnected={isConnected} />
-      </SidebarProvider>
     </div>
   )
 }

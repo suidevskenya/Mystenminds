@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+
 import { NextResponse } from "next/server"
 
 // This is a placeholder for the actual API route that would connect to your Python backend

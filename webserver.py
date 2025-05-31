@@ -64,12 +64,37 @@ async def chat_options():
 
 @app.post("/chat")
 async def chat(request: Request):
-    data = await request.json()
-    user_message = data.get("message", "")
-    if not user_message:
-        return JSONResponse({"error": "No message provided"}, status_code=400)
-    response = await agent.process_query(user_message)
-    return JSONResponse({"answer": response})
+    """
+    POST /chat endpoint to process user messages via SuiAgent.
+    Expects JSON payload: {"message": "user input string"}
+    Returns JSON response: {"answer": JSON string with final_answer and metadata}
+    """
+    try:
+        data = await request.json()
+        user_message = data.get("message", "")
+        if not user_message:
+            return JSONResponse({"error": "No message provided"}, status_code=400)
+        # Log incoming user message
+        print(f"Received message from user: {user_message}")
+        response = await agent.process_query(user_message)
+        # Log agent response
+        print(f"Agent response: {response}")
+        return JSONResponse({"answer": response})
+    except Exception as e:
+        print(f"Error processing /chat request: {str(e)}")
+        return JSONResponse({"error": "Internal server error"}, status_code=500)
+
+@app.get("/health")
+async def health_check():
+    """
+    Simple health check endpoint to verify the server and agent are running.
+    """
+    try:
+        greeting = agent.get_greeting()
+        return JSONResponse({"status": "ok", "agent_name": agent.name, "greeting": greeting})
+    except Exception as e:
+        print(f"Health check failed: {str(e)}")
+        return JSONResponse({"status": "error", "message": "Agent not available"}, status_code=500)
 
 if __name__ == "__main__":
     uvicorn.run("webserver:app", host="0.0.0.0", port=8000, reload=True)

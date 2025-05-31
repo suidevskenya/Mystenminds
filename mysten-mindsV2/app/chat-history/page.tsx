@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useWallet } from "@/hooks/use-wallet"
-import { Button } from "@/components/ui/button"
-import { MobileNav } from "@/components/mobile-nav"
+import { useWallet } from "../../../hooks/use-wallet"
+import { Button } from "../../../components/ui/button"
+import { MobileNav } from "../../../components/mobile-nav"
 import { ArrowLeft, MessageSquare, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
 import { useTranslation } from "react-i18next"
-import {SidebarProvider } from '@/app/context/SidebarContext'
+import { SidebarProvider } from "../../../app/context/SidebarContext"
 
 export default function ChatHistoryPage() {
   const { isAuthenticated, chatSessions, currentChatId, setCurrentChatId, createNewChat } = useWallet()

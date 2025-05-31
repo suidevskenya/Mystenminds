@@ -2,6 +2,7 @@ import withPWA from 'next-pwa';
 
 const nextConfig = {
   reactStrictMode: true,
+  output: 'export',
   images: {
     domains: ['hebbkx1anhila5yf.public.blob.vercel-storage.com'],
     unoptimized: true,

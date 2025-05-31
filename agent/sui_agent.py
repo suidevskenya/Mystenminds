@@ -17,13 +17,22 @@ import os
 from config.config import AGENT_NAME, AGENT_GREETING
 from agent.tools import GetSuiInfoTool, GetSuiResourcesTool, ExplainSuiConceptTool
 from agent.blockchain_tools import GetObjectTool, GetTransactionsTool, GetAccountBalanceTool, GetNetworkStatsTool, CreateTransferTool
-from agent.community_tools import TelegramGroupsTool, TwitterSuiTrendsTool
-from agent.tweepy_twitter_tool import TweepyTwitterTool
+from agent.community_tools import TelegramGroupsTool
+# from agent.tweepy_twitter_tool import TweepyTwitterTool  # Removed due to missing file
 from agent.market_data_tool import GetMarketDataTool
 from agent.market_data_agent import MarketDataAgent
 
 class SuiAgent:
+    """
+    SuiAgent is an AI assistant for the Sui blockchain that processes user queries
+    using Google Gemini LLM and various blockchain and community tools.
+    """
+
     def __init__(self):
+        """
+        Initialize the SuiAgent with Google Gemini API, tools, and agent executor.
+        Requires GEMINI_API_KEY environment variable to be set.
+        """
         # Load GEMINI_API_KEY and GEMINI_MODEL from environment
         gemini_api_key = os.getenv("GEMINI_API_KEY")
         gemini_model = os.getenv("GEMINI_MODEL", "models/gemini-1.5-pro")
@@ -130,14 +139,18 @@ class SuiAgent:
             GetNetworkStatsTool(),
             CreateTransferTool(),
             TelegramGroupsTool(),
-            TwitterSuiTrendsTool(),
-            TweepyTwitterTool(),
+            # TweepyTwitterTool(),  # Removed due to missing file
             GetMarketDataTool(market_data_agent),
             google_search_tool
         ]
 
     async def process_query(self, query: str, is_first_interaction: bool = False) -> str:
-        """Process queries with clean error handling and fallback, returning JSON string output"""
+        """
+        Process a user query asynchronously using the agent executor.
+        Returns a JSON string with the final answer and metadata.
+        Handles Telegram group queries directly to avoid LLM quota issues.
+        Provides fallback error response on exceptions.
+        """
         import json
         try:
             # Directly handle Telegram groups queries to avoid LLM quota issues

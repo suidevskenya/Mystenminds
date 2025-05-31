@@ -176,7 +176,7 @@ export default function ChatPage() {
     scrollToBottom()
   }, [messages])
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return
 
     const newMessage = { role: "user", content: input, timestamp: new Date() }
@@ -184,19 +184,43 @@ export default function ChatPage() {
     setInput("")
     setRobotState("thinking")
 
-    setTimeout(() => {
-      setRobotState("speaking")
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: input })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const answerJson = JSON.parse(data.answer)
+      const finalAnswer = answerJson.final_answer || "Sorry, I couldn't process that request."
+
       setMessages((prev) => [
         ...prev,
         {
           role: "system",
-          content:
-            "I'm your AI guide to the SUI ecosystem.\n\n*Ask me about:*\n- SUI blockchain\n- Move programming\n- Mysten Labs",
+          content: finalAnswer,
           timestamp: new Date(),
         },
       ])
-      setTimeout(() => setRobotState("idle"), 1000)
-    }, 1500)
+      setRobotState("idle")
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "system",
+          content: "Error: Unable to get response from the AI agent.",
+          timestamp: new Date(),
+        },
+      ])
+      setRobotState("idle")
+    }
   }
 
   return (
@@ -213,5 +237,3 @@ export default function ChatPage() {
     </SidebarProvider>
   )
 }
-
-

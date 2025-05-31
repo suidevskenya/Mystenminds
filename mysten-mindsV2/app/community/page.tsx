@@ -1,16 +1,16 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "../../../components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { TelegramGroups } from "@/components/telegram-groups"
-import { MobileNav } from "@/components/mobile-nav"
-import { useWallet } from "@/hooks/use-wallet"
+import { TelegramGroups } from "../../components/telegram-groups"
+import { MobileNav } from "../../../components/mobile-nav"
+import { useWallet } from "../../../hooks/use-wallet"
 import { useTranslation } from "react-i18next"
-import {SidebarProvider} from '@/app/context/SidebarContext'
+import { SidebarProvider } from "../../../app/context/SidebarContext"
 
 export default function CommunityPage() {
-  const { isConnected } = useWallet()
+  const { isAuthenticated } = useWallet()
   const { t } = useTranslation()
 
   return (
@@ -34,7 +34,7 @@ export default function CommunityPage() {
         </div>
       </main>
       <SidebarProvider>
-        <MobileNav isConnected={isConnected} />
+        <MobileNav isConnected={isAuthenticated} />
       </SidebarProvider>
       
     </div>
